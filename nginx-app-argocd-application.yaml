@@ -6,8 +6,8 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/Cichyyyy/nginx-app.git
-    targetRevision: HEAD
+    repoURL: 'https://github.com/Cichyyyy/nginx-app.git'
+    targetRevision: main
     path: .
     helm:
       valueFiles:
