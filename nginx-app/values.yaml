@@ -1,0 +1,44 @@
+replicaCount: 2
+
+image:
+  repository: nginx
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 80
+
+nginx:
+  healthPath: /healthz
+  rootPath: /usr/share/nginx/html
+  indexFile: index.html
+
+auth:
+  enabled: true
+  htpasswd: "user1:$2y$10$B.j/Bn0vG/jnV/NNpzRNvOw7Iuz/IwUWIt7jxl1MLe.yCl4v8r9xW"
+
+persistence:
+  enabled: true
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+namespaceOverride: ""
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage:

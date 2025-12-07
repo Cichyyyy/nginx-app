@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nginx-app.fullname" . }}
+  labels:
+    {{- include "nginx-app.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "nginx-app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "nginx-app.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: nginx
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.appVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            {{- if .Values.auth.enabled }}
+            - name: nginx-auth
+              mountPath: /etc/nginx/.htpasswd
+              subPath: .htpasswd
+            {{- end }}
+            {{- if .Values.persistence.enabled }}
+            - name: nginx-data
+              mountPath: {{ .Values.nginx.rootPath }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.nginx.healthPath }}
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.nginx.healthPath }}
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: {{ include "nginx-app.fullname" . }}-config
+        {{- if .Values.auth.enabled }}
+        - name: nginx-auth
+          secret:
+            secretName: {{ include "nginx-app.fullname" . }}-secret
+        {{- end }}
+        {{- if .Values.persistence.enabled }}
+        - name: nginx-data
+          persistentVolumeClaim:
+            claimName: {{ include "nginx-app.fullname" . }}-pvc
+        {{- end }}
