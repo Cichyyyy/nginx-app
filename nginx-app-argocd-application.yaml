@@ -5,19 +5,16 @@ metadata:
   namespace: argocd
 spec:
   project: default
-
   source:
-    repoURL: 'https://github.com/Cichyyyy/Academy.git'
-    targetRevision: main
-    path: nginxx/nginx-app/nginx-app   
+    repoURL: https://github.com/Cichyyyy/nginx-app.git
+    targetRevision: HEAD
+    path: .
     helm:
       valueFiles:
-        - values.yaml          
-
+        - values.yaml
   destination:
-    server: 'https://kubernetes.default.svc'
-    namespace: nginx-app/       
-
+    server: https://kubernetes.default.svc
+    namespace: nginx-app
   syncPolicy:
     automated:
       prune: true
